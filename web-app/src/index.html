@@ -1,11 +1,11 @@
 <html>
     <head>
         <title>Subscription Manager Demo</title>
-       <script type="module">
+       <script type="module" defer>
             import solaceClient from './async-solace-wrapper.ts';
 
             const defaultMessageCallback = (message) => {
-                console.log('Received message:', message);
+                log(`Received message: ${message.getBinaryAttachment()} on topic: ${message.getDestination().getName()}`);
             }
             
             solaceClient.connect(
@@ -14,26 +14,32 @@
                 'portal-user',
                 'test',
             ).then(()=>{
-                console.log('Connected to Solace');
-               
-                solaceClient.sendSubscriptionRequest('topic/request/portal-user',
-				 JSON.stringify({
-						username: 'default',
-						clientName: solaceClient.getClientName()}), defaultMessageCallback ).then((response) => {
-						console.log('Subscribed to the following topics: ' + response);
-					}).then(() => {
-						console.log(`Subscribed via subman`);
-				})
-                solaceClient.unsubscribe('topic1/*').then(()=>{
-                    console.log('Unsubscribed from topic1/*');
-                }).catch((err)=>{
-                    console.error('Error unsubscribing from topic1/*', err);
-                })
+               log('<i>Connected to Solace</i><br>');
                
             }).catch((err)=>{
-                console.error('Error connecting to Solace', err);
+               log('<i>Error connecting to Solace...</i>');
             })
 
+            const log = (message) => {
+                document.getElementById('activity').innerHTML = message + '<br>' + document.getElementById('activity').innerHTML;
+            }
+
+            const requestSubs = () => {
+                solaceClient.sendSubscriptionRequest('topic/request/portal-user',
+				 JSON.stringify({
+						username: 'default', 
+						clientName: solaceClient.getClientName()}), defaultMessageCallback ).then((response) => {
+                            log('Subscribed to the following topics: ' + response);
+					}).then(() => {
+						log(`Subscribed via subman`);
+				}).catch((err) => {
+                    log(`Error subscribing: ${err}`);
+                })
+            }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('btnRequestSubs').addEventListener('click', requestSubs);
+        });
             
 
        </script>
@@ -41,6 +47,9 @@
     </head>
     <body>
         <h1 align="center">Subscription Manager Web Application</h1>
-
+        <button id="btnRequestSubs">Request Subscription</button>
+        <br><br><br>
+        <b>Activity:</b>
+        <div id="activity"></div>
     </body>
 </html>
