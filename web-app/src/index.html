@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <title>Subscription Manager Demo</title>
+       <script type="module">
+            import solaceClient from './async-solace-wrapper.ts';
+
+            const defaultMessageCallback = (message) => {
+                console.log('Received message:', message);
+            }
+            
+            solaceClient.connect(
+                'ws://localhost:8008',
+                'default',
+                'portal-user',
+                'test',
+            ).then(()=>{
+                console.log('Connected to Solace');
+               
+                solaceClient.sendSubscriptionRequest('topic/request/portal-user',
+				 JSON.stringify({
+						username: 'default',
+						clientName: solaceClient.getClientName()}), defaultMessageCallback ).then((response) => {
+						console.log('Subscribed to the following topics: ' + response);
+					}).then(() => {
+						console.log(`Subscribed via subman`);
+				})
+                solaceClient.unsubscribe('topic1/*').then(()=>{
+                    console.log('Unsubscribed from topic1/*');
+                }).catch((err)=>{
+                    console.error('Error unsubscribing from topic1/*', err);
+                })
+               
+            }).catch((err)=>{
+                console.error('Error connecting to Solace', err);
+            })
+
+            
+
+       </script>
+
+    </head>
+    <body>
+        <h1 align="center">Subscription Manager Web Application</h1>
+
+    </body>
+</html>
