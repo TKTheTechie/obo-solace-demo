@@ -24,6 +24,15 @@
                 document.getElementById('activity').innerHTML = message + '<br>' + document.getElementById('activity').innerHTML;
             }
 
+            const tryToSubscribeManually = () => {
+                log('Trying to subscribe manually to Topic1...');
+                solaceClient.subscribe('topic1/test', defaultMessageCallback).then(() => {
+                    log('Subscribed to topic1/test');
+                }).catch((err) => {
+                    log(`Error subscribing: ${err}`);
+                });
+            }
+
             const requestSubs = () => {
                 solaceClient.sendSubscriptionRequest('topic/request/portal-user',
 				 JSON.stringify({
@@ -39,6 +48,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('btnRequestSubs').addEventListener('click', requestSubs);
+            document.getElementById('btnSubscribeManually').addEventListener('click', tryToSubscribeManually);
         });
             
 
@@ -47,7 +57,8 @@
     </head>
     <body>
         <h1 align="center">Subscription Manager Web Application</h1>
-        <button id="btnRequestSubs">Request Subscription</button>
+        <button id="btnRequestSubs">Request Subscription from the Subscription Manager</button>
+        <button id="btnSubscribeManually">Subscribe Manually to topic1/test</button>
         <br><br><br>
         <b>Activity:</b>
         <div id="activity"></div>
